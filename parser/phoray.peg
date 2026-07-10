@@ -1,0 +1,66 @@
+# ----- whitespace -----
+
+Spacing <- (Space / Comment)*
+
+Space <- [ \t\r\n]+
+
+Comment <- "#" (!"\n" .)*
+
+# ----- entry -----
+
+File
+    <- Spacing Statement* EndOfFile
+
+Statement
+    <- Component
+     / Connect
+     / Scene
+
+Scene
+    <- "scene" String
+
+Component
+    <- Identifier Identifier Block
+
+Block
+    <- "{" Property* "}"
+
+Property
+    <- Position
+     / NumberProperty
+
+Position
+    <- "position"
+       "("
+       Number
+       ","
+       Number
+       ")"
+
+NumberProperty
+    <- Identifier Number Unit?
+
+Connect
+    <- "connect"
+       Endpoint
+       "->"
+       Endpoint
+
+Endpoint
+    <- Identifier "." Identifier
+
+Identifier
+    <- [A-Za-z_]
+       [A-Za-z0-9_]*
+
+Number
+    <- [0-9]+ ("." [0-9]+)?
+
+Unit
+    <- Identifier
+
+String
+    <- '"' (!'"' .)* '"'
+
+EndOfFile
+    <- !.
