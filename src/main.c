@@ -3,8 +3,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include "phoray.h"
 #include "component.h"
-
-
+#include "vector.h"
 
 int main() {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -43,13 +42,22 @@ int main() {
     "1550 nm"
   };
 
-  Component fiber = {
-        350,200,
-        170,90,
-        "FIBER",
-        "10 m"
-    };
+  Component fiber = {350, 200, 170, 90, "FIBER", "10 m"};
 
+  Vector *v = create_vector(3);
+  vector_set(v, 0, 1);
+
+  Vector *v1 = create_vector(3);
+  vector_set(v1, 1, 3);
+
+  Vector *result = create_vector(3);
+
+  vector_add(result, v, v1);
+  
+  printf("normal is %2f\n", vector_norm(result));
+  vector_print(result);
+  
+  
   
   bool running = true;
 

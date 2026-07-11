@@ -14,6 +14,7 @@ set(SOURCES
   src/main.c
   src/component.c
   src/registry.c
+  src/math/vector.c
   parser/phoray.c
 )
 
@@ -22,10 +23,12 @@ add_executable(rays ${SOURCES})
 target_include_directories(rays PRIVATE
   src
   parser
+  src/math
 )
 
 target_link_libraries(rays
   PRIVATE
   SDL3::SDL3
   SDL3_ttf::SDL3_ttf
+  m
 )
