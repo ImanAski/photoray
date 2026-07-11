@@ -134,3 +134,55 @@ void vector_print(const Vector *v) {
 
     printf("]\n");
 }
+
+double vector_min_elem(const Vector *v) {
+  double res = 0.0;
+
+  for (size_t i = 0; i < v->size; i++) {
+    if (v->data[i] < res)
+      res = v->data[i];
+  }
+
+  return res;
+}
+
+double vector_max_elem(const Vector *v) {
+  double res = 0.0;
+
+  for (size_t i = 0; i < v->size; i++) {
+    if (v->data[i] > res)
+      res = v->data[i];
+  }
+
+  return res;
+}
+
+double vector_sum(const Vector *v) {
+  double res = 0.0;
+  
+  for (size_t i = 0; i < v->size; i++) {
+    res += v->data[i];
+  }
+
+  return res;
+}
+
+double vector_distance(const Vector *a, const Vector *b) {
+  if (!a || !b)
+    return 0.0;
+
+  if (a->size != b->size)
+    return 0.0;
+
+  Vector *sub = create_vector(a->size);
+  vector_sub(sub, a, b);
+
+  double res = 0.0;
+  
+  for (size_t i = 0; i < sub->size; i++) {
+    res += sqrt(pow(sub->data[i], 2));
+  }
+  
+  
+  return abs(sqrt(res));
+}

@@ -53,8 +53,12 @@ int main() {
   Vector *result = create_vector(3);
 
   vector_add(result, v, v1);
-  
+
   printf("normal is %2f\n", vector_norm(result));
+  printf("max: %2f, min: %2f\n", vector_max_elem(result),
+         vector_min_elem(result));
+  printf("distance from v: %d\n", vector_distance(result, v));
+  printf("distance from v1: %d\n", vector_distance(result, v1));
   vector_print(result);
   
   
