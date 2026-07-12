@@ -4,6 +4,8 @@
 #include "phoray.h"
 #include "component.h"
 #include "vector.h"
+#include "scattering_matrix.h"
+#include "matrix.h"
 
 int main() {
   if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -60,7 +62,23 @@ int main() {
   printf("distance from v: %d\n", vector_distance(result, v));
   printf("distance from v1: %d\n", vector_distance(result, v1));
   vector_print(result);
-  
+
+  ScatteringMatrix *bs = beam_splitter_create(0.5);
+
+  Vector *in = create_vector(2);
+
+  in->data[0] = 1.0;
+  in->data[1] = 0.0;
+
+  Vector *out = smatrix_propagate(bs, in);
+
+  printf("Output:\n");
+  printf("%f\n", out->data[0]);
+  printf("%f\n", out->data[1]);
+
+  vector_destroy(in);
+  vector_destroy(out);
+  smatrix_destroy(bs);
   
   
   bool running = true;
