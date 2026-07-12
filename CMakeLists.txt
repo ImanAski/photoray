@@ -14,10 +14,10 @@ set(SOURCES
   src/main.c
   src/component.c
   src/registry.c
+  src/scene.c
   src/math/matrix.c
   src/math/cmatrix.c
   src/math/complex.c
-  
   src/math/scattering_matrix.c
   src/math/vector.c
   parser/phoray.c

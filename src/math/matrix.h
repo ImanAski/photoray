@@ -31,6 +31,8 @@ Matrix *matrix_inverse(const Matrix *);
 double matrix_trace(const Matrix *);
 double matrix_norm(const Matrix *);
 
+double matrix_det(const Matrix *);
+
 void matrix_print(const Matrix *);
 
 #endif

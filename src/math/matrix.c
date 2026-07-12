@@ -128,6 +128,68 @@ Matrix *matrix_mul(const Matrix *a, const Matrix *b)
     return c;
 }
 
+double matrix_det(const Matrix *m) {
+  if (!m || m->rows != m->cols)
+    return 0.0;
+
+  size_t n = m->rows;
+
+  Matrix *a = matrix_copy(m);
+  if (!a)
+    return 0.0;
+
+  double det = 1.0;
+  int sign = 1;
+
+  for (size_t k = 0; k < n; ++k) {
+    size_t pivot = k;
+    double max = fabs(MAT(a, k, k));
+
+    for (size_t i = k + 1; i < n; ++i) {
+      double val = fabs(MAT(a, i, k));
+      if (val > max) {
+        max = val;
+	pivot = i;
+      }
+    }
+
+    /* Singular matrix */
+        if (max < 1e-12) {
+            matrix_destroy(a);
+            return 0.0;
+        }
+
+        /* Swap rows if necessary */
+        if (pivot != k) {
+
+            for (size_t j = 0; j < n; ++j) {
+                double tmp = MAT(a, k, j);
+                MAT(a, k, j) = MAT(a, pivot, j);
+                MAT(a, pivot, j) = tmp;
+            }
+
+            sign = -sign;
+        }
+
+        double pivot_val = MAT(a, k, k);
+
+        /* Eliminate below pivot */
+        for (size_t i = k + 1; i < n; ++i) {
+
+            double factor = MAT(a, i, k) / pivot_val;
+
+            for (size_t j = k; j < n; ++j)
+                MAT(a, i, j) -= factor * MAT(a, k, j);
+        }
+
+        det *= pivot_val;
+    }
+
+    matrix_destroy(a);
+
+    return sign * det;
+}
+
 Matrix *matrix_scale(const Matrix *m, double s)
 {
     Matrix *out = matrix_copy(m);

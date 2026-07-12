@@ -1,66 +1,49 @@
-# ----- whitespace -----
+%prefix "lumos"
 
-Spacing <- (Space / Comment)*
+%source {
+#include <stdio.h>
+#include <string.h>
+}
 
-Space <- [ \t\r\n]+
 
-Comment <- "#" (!"\n" .)*
+statement <- _ property _ EOL
+	  / _ Component _ EOL
+	  / _ Connect _ EOL
+	  / ( !EOL . )* EOL { printf("unknown statements\n"); }
 
-# ----- entry -----
 
-File
-    <- Spacing Statement* EndOfFile
+Connect <- l:IDENT ':' lp:Number _ r:IDENT ':' rp:Number { printf("connect %s on port %d to %s on port %d\n", l, lp, r, rp); }
 
-Statement
-    <- Component
-     / Connect
-     / Scene
+Version <- "version" _ '(' _ Number _ ')' _ ';'
 
-Scene
-    <- "scene" String
+Number <- Integer
 
-Component
-    <- Identifier Identifier Block
+Integer <- [0-9_]+
 
-Block
-    <- "{" Property* "}"
+Component <- ComponentType _ IDENT _ '=' _ '{' _ '}' {
+	  printf("Component\n");
+	  }
 
-Property
-    <- Position
-     / NumberProperty
+ComponentType
+    <- "Laser"
+     / "Fiber"
+     / "Mirror"
+     / "BeamSplitter"
 
-Position
-    <- "position"
-       "("
-       Number
-       ","
-       Number
-       ")"
 
-NumberProperty
-    <- Identifier Number Unit?
+property
+    <- IDENT _ '=' _ VALUE {
+        printf("Property\n");
+    }
 
-Connect
-    <- "connect"
-       Endpoint
-       "->"
-       Endpoint
+IDENT
+    <- [a-zA-Z_][a-zA-Z0-9_]*
 
-Endpoint
-    <- Identifier "." Identifier
+VALUE
+    <- < [0-9]+ > { $$ = atoi($1); }
+     / '"' (!'"' .)* '"'
 
-Identifier
-    <- [A-Za-z_]
-       [A-Za-z0-9_]*
+_      <- [ \t]*
+EOL    <- '\n' / '\r\n' / '\r' / ';'
 
-Number
-    <- [0-9]+ ("." [0-9]+)?
-
-Unit
-    <- Identifier
-
-String
-    <- '"' (!'"' .)* '"'
-
-EndOfFile
-    <- !.
+%%

@@ -6,107 +6,126 @@
 #include "vector.h"
 #include "scattering_matrix.h"
 #include "matrix.h"
+#include "scene.h"
 
-int main() {
-  if (!SDL_Init(SDL_INIT_VIDEO)) {
-    SDL_Log("failed");
-    return 1;
-  }
+int main(void)
+{
+    // SDL
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return 1;
+    }
 
-  if (!TTF_Init()) {
-    SDL_Log("failed to init ttf");
-    return 1;
-  }
-  
-  SDL_Window *window = SDL_CreateWindow("Title", 800, 600, 0);
+    if (!TTF_Init()) {
+        SDL_Log("TTF_Init failed: %s", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
 
-  if (!window) {
-    SDL_Log("failed window");
-    SDL_Quit();
-    return 1;
-  }
+    SDL_Window *window =
+        SDL_CreateWindow("PhotonRay", 800, 600, 0);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
+    if (!window) {
+        SDL_Log("Window creation failed: %s", SDL_GetError());
+        TTF_Quit();
+        SDL_Quit();
+        return 1;
+    }
 
-  TTF_Font *font =
+    SDL_Renderer *renderer =
+        SDL_CreateRenderer(window, NULL);
+
+    if (!renderer) {
+        SDL_Log("Renderer creation failed: %s", SDL_GetError());
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+        return 1;
+    }
+
+    TTF_Font *font =
         TTF_OpenFont("/usr/share/fonts/TTF/FiraCode-Regular.ttf", 16);
 
-  if (!font) {
-    SDL_Log("Could not load font. %s", SDL_GetError());
-    return 1;
-    
-  }
-
-  Component laser = {
-    100, 200,
-    170, 90,
-    "L1",
-    "1550 nm"
-  };
-
-  Component fiber = {350, 200, 170, 90, "FIBER", "10 m"};
-
-  Vector *v = create_vector(3);
-  vector_set(v, 0, 1);
-
-  Vector *v1 = create_vector(3);
-  vector_set(v1, 1, 3);
-
-  Vector *result = create_vector(3);
-
-  vector_add(result, v, v1);
-
-  printf("normal is %2f\n", vector_norm(result));
-  printf("max: %2f, min: %2f\n", vector_max_elem(result),
-         vector_min_elem(result));
-  printf("distance from v: %d\n", vector_distance(result, v));
-  printf("distance from v1: %d\n", vector_distance(result, v1));
-  vector_print(result);
-
-  ScatteringMatrix *bs = beam_splitter_create(0.5);
-
-  Vector *in = create_vector(2);
-
-  in->data[0] = 1.0;
-  in->data[1] = 0.0;
-
-  Vector *out = smatrix_propagate(bs, in);
-
-  printf("Output:\n");
-  printf("%f\n", out->data[0]);
-  printf("%f\n", out->data[1]);
-
-  vector_destroy(in);
-  vector_destroy(out);
-  smatrix_destroy(bs);
-  
-  
-  bool running = true;
-
-  while (running) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_EVENT_QUIT)
-	running = false;
+    if (!font) {
+        SDL_Log("Could not load font: %s", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_Quit();
+        SDL_Quit();
+        return 1;
     }
-    SDL_SetRenderDrawColor(renderer, 30, 30, 60, 255);
-    SDL_RenderClear(renderer);
 
-    
-    drawComponent(renderer, font, laser);
-    drawComponent(renderer, font, fiber);
+    // Scene
+    Scene scene;
+    scene_init(&scene);
 
-    SDL_RenderLine(renderer,
-                       laser.x + laser.w,
-                       laser.y + laser.h/2,
-                       fiber.x,
-                       fiber.y + fiber.h/2);
-    
-    SDL_RenderPresent(renderer);
-  }
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-  
-  return 0;
+    Component *laser = scene_add(&scene, (Component){
+    .x = 80,
+    .y = 220,
+    .w = 170,
+    .h = 90,
+    .name = "L1",
+    .sub = "1550 nm",
+});
+
+Component *splitter = scene_add(&scene, (Component){
+    .x = 340,
+    .y = 220,
+    .w = 170,
+    .h = 90,
+    .name = "BS",
+    .sub = "50/50",
+    .input_count = 1,
+    .output_count = 2,
+});
+
+Component *fiber1 = scene_add(&scene, (Component){
+    .x = 620,
+    .y = 120,
+    .w = 170,
+    .h = 90,
+    .name = "F1",
+    .sub = "5 m",
+});
+
+Component *fiber2 = scene_add(&scene, (Component){
+    .x = 620,
+    .y = 320,
+    .w = 170,
+    .h = 90,
+    .name = "F2",
+    .sub = "10 m",
+});
+
+scene_connect(&scene, laser, 0, splitter, 0);
+scene_connect(&scene, splitter, 0, fiber1, 0);
+scene_connect(&scene, splitter, 1, fiber2, 0);
+
+    bool running = true;
+
+    while (running) {
+
+        SDL_Event event;
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT)
+                running = false;
+        }
+
+        SDL_SetRenderDrawColor(renderer, 30, 30, 60, 255);
+        SDL_RenderClear(renderer);
+
+        scene_render(&scene, renderer, font);
+
+        SDL_RenderPresent(renderer);
+    }
+
+    TTF_CloseFont(font);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
+    TTF_Quit();
+    SDL_Quit();
+
+    return 0;
 }
